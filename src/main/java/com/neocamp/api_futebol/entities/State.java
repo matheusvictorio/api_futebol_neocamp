@@ -1,0 +1,30 @@
+package com.neocamp.api_futebol.entities;
+
+public enum State {
+    AC,
+    AL,
+    AP,
+    AM,
+    BA,
+    CE,
+    DF,
+    ES,
+    GO,
+    MA,
+    MT,
+    MS,
+    MG,
+    PA,
+    PB,
+    PR,
+    PI,
+    RJ,
+    RN,
+    RS,
+    RO,
+    RR,
+    SC,
+    SP,
+    SE,
+    TO
+}
