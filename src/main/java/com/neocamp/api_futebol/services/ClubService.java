@@ -55,4 +55,14 @@ public class ClubService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe outro clube com esse nome e estado");
         }
     }
+
+    public void deleteClub(Long id) {
+        var club = clubRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado"));
+        if (club.getActive() == false) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Clube já está inativo!");
+        }
+        club.delete();
+        clubRepository.save(club);
+    }
 }

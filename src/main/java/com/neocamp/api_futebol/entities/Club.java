@@ -64,4 +64,8 @@ public class Club {
     public void setCreatedAt(LocalDate createdAt) {
         this.createdAt = createdAt;
     }
+
+    public void delete(){
+        this.active = false;
+    }
 }

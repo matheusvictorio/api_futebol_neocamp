@@ -18,14 +18,20 @@ public class ClubController {
 
     @PostMapping
     public ResponseEntity<ClubsResponseDTO> createClub(@RequestBody @Valid ClubsRequestDTO clubsRequestDTO) {
-        ClubsResponseDTO clubsResponseDTO = clubService.createClub(clubsRequestDTO);
+        var clubsResponseDTO = clubService.createClub(clubsRequestDTO);
         //devo usar URI ao inves do status?
         return ResponseEntity.status(HttpStatus.CREATED).body(clubsResponseDTO);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ClubsResponseDTO> updateClub(@PathVariable Long id, @RequestBody @Valid ClubsRequestDTO clubsRequestDTO) {
-        ClubsResponseDTO clubsResponseDTO = clubService.updateClub(id, clubsRequestDTO);
+        var clubsResponseDTO = clubService.updateClub(id, clubsRequestDTO);
         return ResponseEntity.ok().body(clubsResponseDTO);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteClub(@PathVariable Long id) {
+        clubService.deleteClub(id);
+        return ResponseEntity.noContent().build();
     }
 }
