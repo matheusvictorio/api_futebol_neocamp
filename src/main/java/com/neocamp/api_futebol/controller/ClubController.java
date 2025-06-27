@@ -4,13 +4,11 @@ import com.neocamp.api_futebol.dtos.request.ClubsRequestDTO;
 import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.services.ClubService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/clubs")
@@ -19,9 +17,15 @@ public class ClubController {
     private ClubService clubService;
 
     @PostMapping
-    public ResponseEntity<ClubsResponseDTO> createClub(@RequestBody ClubsRequestDTO clubsRequestDTO) {
+    public ResponseEntity<ClubsResponseDTO> createClub(@RequestBody @Valid ClubsRequestDTO clubsRequestDTO) {
         ClubsResponseDTO clubsResponseDTO = clubService.createClub(clubsRequestDTO);
         //devo usar URI ao inves do status?
         return ResponseEntity.status(HttpStatus.CREATED).body(clubsResponseDTO);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ClubsResponseDTO> updateClub(@PathVariable Long id, @RequestBody @Valid ClubsRequestDTO clubsRequestDTO) {
+        ClubsResponseDTO clubsResponseDTO = clubService.updateClub(id, clubsRequestDTO);
+        return ResponseEntity.ok().body(clubsResponseDTO);
     }
 }
