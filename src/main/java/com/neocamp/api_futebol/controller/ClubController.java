@@ -34,4 +34,10 @@ public class ClubController {
         clubService.deleteClub(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ClubsResponseDTO> getClub(@PathVariable Long id) {
+        ClubsResponseDTO clubsResponseDTO = clubService.findById(id);
+        return ResponseEntity.ok().body(clubsResponseDTO);
+    }
 }

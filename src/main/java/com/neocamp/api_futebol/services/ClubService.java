@@ -65,4 +65,10 @@ public class ClubService {
         club.delete();
         clubRepository.save(club);
     }
+
+    public ClubsResponseDTO findById(Long id) {
+        var club =  clubRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado ou inativo"));;
+        return new ClubsResponseDTO(club.getId(), club.getName(), club.getState(), club.getActive(), club.getCreatedAt());
+    }
 }
