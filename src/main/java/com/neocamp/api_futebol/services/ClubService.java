@@ -8,6 +8,8 @@ import com.neocamp.api_futebol.entities.State;
 import com.neocamp.api_futebol.repositories.ClubRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -70,5 +72,12 @@ public class ClubService {
         var club =  clubRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado ou inativo"));;
         return new ClubsResponseDTO(club.getId(), club.getName(), club.getState(), club.getActive(), club.getCreatedAt());
+    }
+
+
+    public Page<ClubsResponseDTO> searchClubs(String name, String state, Boolean active, Pageable pageable) {
+        return clubRepository.findWithFilter(name, state, active, pageable)
+                .map(ClubsResponseDTO::new);
+
     }
 }
