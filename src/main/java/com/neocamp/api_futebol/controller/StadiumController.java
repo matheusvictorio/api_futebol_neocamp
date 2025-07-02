@@ -21,4 +21,22 @@ public class StadiumController {
         StadiumResponseDTO stadiumResponseDTO = stadiumService.createStadium(stadiumRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(stadiumResponseDTO);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<StadiumResponseDTO>  updateStadium(@PathVariable Long id, @RequestBody @Valid StadiumRequestDTO stadiumRequestDTO){
+        StadiumResponseDTO stadiumResponseDTO = stadiumService.updateStadium(id, stadiumRequestDTO);
+        return ResponseEntity.ok().body(stadiumResponseDTO);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteStadium(@PathVariable Long id){
+        stadiumService.deleteStadium(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<StadiumResponseDTO> getStadium(@PathVariable Long id){
+        StadiumResponseDTO stadiumResponseDTO = stadiumService.findById(id);
+        return ResponseEntity.ok().body(stadiumResponseDTO);
+    }
 }

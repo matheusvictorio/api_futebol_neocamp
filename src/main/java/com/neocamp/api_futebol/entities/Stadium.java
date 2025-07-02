@@ -9,10 +9,12 @@ public class Stadium {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private Boolean active = true;
 
     public Stadium(Long id, String name) {
         this.id = id;
         this.name = name;
+        this.active = true;
     }
 
     public Stadium() {}
@@ -31,5 +33,16 @@ public class Stadium {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean getActive() {
+        return active;
+    }
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public void delete(){
+        this.active = false;
     }
 }
