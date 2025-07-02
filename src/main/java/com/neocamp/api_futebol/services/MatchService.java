@@ -1,6 +1,7 @@
 package com.neocamp.api_futebol.services;
 
 import com.neocamp.api_futebol.dtos.request.MatchesRequestDTO;
+import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
 import com.neocamp.api_futebol.dtos.response.MatchesResponseDTO;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.entities.Match;
@@ -10,6 +11,8 @@ import com.neocamp.api_futebol.repositories.MatchRepository;
 import com.neocamp.api_futebol.repositories.StadiumRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -84,5 +87,32 @@ public class MatchService {
 
     public void deleteClub(Long id) {
         matchRepository.deleteById(id);
+    }
+
+    public MatchesResponseDTO findById(Long id) {
+        var match = matchRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Partida não encontrada!"));
+
+        String result = matchValidationsService.formatResult(match);
+        String winner = matchValidationsService.determineWinner(match);
+
+        return new MatchesResponseDTO(
+                match.getId(),
+                match.getHomeClub().getName(),
+                match.getAwayClub().getName(),
+                match.getStadium().getName(),
+                match.getMatchDateTime(),
+                result,
+                winner
+        );
+    }
+
+    public Page<MatchesResponseDTO> searchMatches(Long clubId, Long stadiumId, Pageable pageable) {
+        Page<Match> matches = matchRepository.findWithFilters(clubId, stadiumId, pageable);
+        return matches.map(m -> {
+            String result = matchValidationsService.formatResult(m);
+            String winner = matchValidationsService.determineWinner(m);
+            return new MatchesResponseDTO(m, result, winner);
+        });
     }
 }

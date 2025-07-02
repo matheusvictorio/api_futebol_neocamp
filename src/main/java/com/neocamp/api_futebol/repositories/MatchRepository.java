@@ -1,6 +1,8 @@
 package com.neocamp.api_futebol.repositories;
 
 import com.neocamp.api_futebol.entities.Match;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,5 +33,15 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findMatchesNearDateForClub(
             @Param("clubId") Long clubId,
             @Param("dateTime") LocalDateTime dateTime
+    );
+    @Query("""
+        SELECT m FROM Match m
+        WHERE (:clubId IS NULL OR m.homeClub.id = :clubId OR m.awayClub.id = :clubId)
+          AND (:stadiumId IS NULL OR m.stadium.id = :stadiumId)
+    """)
+    Page<Match> findWithFilters(
+            @Param("clubId") Long clubId,
+            @Param("stadiumId") Long stadiumId,
+            Pageable pageable
     );
 }
