@@ -7,6 +7,8 @@ import com.neocamp.api_futebol.entities.Stadium;
 import com.neocamp.api_futebol.repositories.StadiumRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -52,5 +54,10 @@ public class StadiumService {
         var stadium =  stadiumRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado ou inativo"));;
         return new StadiumResponseDTO(stadium.getId(), stadium.getName(), stadium.getActive());
+    }
+
+    public Page<StadiumResponseDTO> searchStadiums(Pageable pageable) {
+        return stadiumRepository.findAll(pageable)
+                .map(StadiumResponseDTO::new);
     }
 }

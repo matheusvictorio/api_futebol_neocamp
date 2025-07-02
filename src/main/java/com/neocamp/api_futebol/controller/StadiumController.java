@@ -6,6 +6,9 @@ import com.neocamp.api_futebol.dtos.response.StadiumResponseDTO;
 import com.neocamp.api_futebol.services.StadiumService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,5 +41,11 @@ public class StadiumController {
     public ResponseEntity<StadiumResponseDTO> getStadium(@PathVariable Long id){
         StadiumResponseDTO stadiumResponseDTO = stadiumService.findById(id);
         return ResponseEntity.ok().body(stadiumResponseDTO);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<StadiumResponseDTO>> getStadiums(@PageableDefault(sort = "name") Pageable pageable){
+        Page<StadiumResponseDTO> page = stadiumService.searchStadiums(pageable);
+        return ResponseEntity.ok().body(page);
     }
 }
