@@ -81,4 +81,8 @@ public class MatchService {
                 winner
         );
     }
+
+    public void deleteClub(Long id) {
+        matchRepository.deleteById(id);
+    }
 }

@@ -2,6 +2,8 @@ package com.neocamp.api_futebol.controller;
 
 import com.neocamp.api_futebol.dtos.request.MatchesRequestDTO;
 import com.neocamp.api_futebol.dtos.response.MatchesResponseDTO;
+import com.neocamp.api_futebol.repositories.MatchRepository;
+import com.neocamp.api_futebol.services.ClubService;
 import com.neocamp.api_futebol.services.MatchService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,10 @@ import org.springframework.web.bind.annotation.*;
 public class MatchController {
     @Autowired
     private MatchService matchService;
+    @Autowired
+    private ClubService clubService;
+    @Autowired
+    private MatchRepository matchRepository;
 
     @PostMapping
     public ResponseEntity<MatchesResponseDTO> createMatch(@RequestBody @Valid MatchesRequestDTO matchesRequestDTO) {
@@ -25,5 +31,11 @@ public class MatchController {
     public ResponseEntity<MatchesResponseDTO> updateMatch(@PathVariable Long id, @RequestBody MatchesRequestDTO matchesRequestDTO) {
         MatchesResponseDTO matchesResponseDTO = matchService.updateMatch(id, matchesRequestDTO);
         return ResponseEntity.ok().body(matchesResponseDTO);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteMatch(@PathVariable Long id) {
+        matchService.deleteClub(id);
+        return ResponseEntity.noContent().build();
     }
 }
