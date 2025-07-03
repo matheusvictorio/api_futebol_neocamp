@@ -3,6 +3,7 @@ package com.neocamp.api_futebol.services;
 import com.neocamp.api_futebol.dtos.request.MatchesRequestDTO;
 import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
 import com.neocamp.api_futebol.dtos.response.MatchesResponseDTO;
+import com.neocamp.api_futebol.dtos.response.MatchesRetrospectDTO;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.entities.Match;
 import com.neocamp.api_futebol.entities.Stadium;
@@ -17,12 +18,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @Service
 public class MatchService {
     @Autowired
     private MatchRepository matchRepository;
     @Autowired
     private MatchValidationsService matchValidationsService;
+    @Autowired
+    private ClubRepository clubRepository;
 
     public MatchesResponseDTO createMatch(@Valid MatchesRequestDTO matchesRequestDTO) {
         Club homeClub = matchValidationsService.findClubOrThrow(matchesRequestDTO.homeClubId());
@@ -114,5 +119,32 @@ public class MatchService {
             String winner = matchValidationsService.determineWinner(m);
             return new MatchesResponseDTO(m, result, winner);
         });
+    }
+
+    public MatchesRetrospectDTO getClubRetrospective(Long id) {
+        clubRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado!"));
+
+        List<Match> matches = matchRepository.findAllMatchesForClub(id);
+
+        int victories = 0, draws = 0, defeats = 0, goalsFor = 0, goalsAgainst = 0;
+
+        for (Match match : matches) {
+            boolean isHome = match.getHomeClub().getId().equals(id);
+
+            // se for o time de casa pega os gols do time de casa, se for de fora pega os gols do time de fora
+            int clubGoals = isHome ? match.getHomeGoals() : match.getAwayGoals();
+            int oppGoals = isHome ? match.getAwayGoals() : match.getHomeGoals();
+
+            goalsFor += clubGoals;
+            goalsAgainst += oppGoals;
+
+            if(clubGoals > oppGoals){
+                victories++;
+            } else if(oppGoals == clubGoals){
+                draws++;
+            } else defeats++;
+        }
+        return new MatchesRetrospectDTO(victories, draws, defeats, goalsFor, goalsAgainst);
     }
 }

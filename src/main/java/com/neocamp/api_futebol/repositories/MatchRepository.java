@@ -44,4 +44,10 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             @Param("stadiumId") Long stadiumId,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT m FROM Match m
+        WHERE m.homeClub.id = :id OR m.awayClub.id = :id
+    """)
+    List<Match> findAllMatchesForClub(Long id);
 }

@@ -2,8 +2,10 @@ package com.neocamp.api_futebol.controller;
 
 import com.neocamp.api_futebol.dtos.request.ClubsRequestDTO;
 import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
+import com.neocamp.api_futebol.dtos.response.MatchesRetrospectDTO;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.services.ClubService;
+import com.neocamp.api_futebol.services.MatchService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 public class ClubController {
     @Autowired
     private ClubService clubService;
+    @Autowired
+    private MatchService matchService;
 
     @PostMapping
     public ResponseEntity<ClubsResponseDTO> createClub(@RequestBody @Valid ClubsRequestDTO clubsRequestDTO) {
@@ -52,5 +56,11 @@ public class ClubController {
     ){
         Page<ClubsResponseDTO> page = clubService.searchClubs(name, state, active, pageable);
         return ResponseEntity.ok().body(page);
+    }
+
+    @GetMapping("/{id}/retrospect")
+    public ResponseEntity<MatchesRetrospectDTO> getClubRetrospective(@PathVariable Long id) {
+        MatchesRetrospectDTO matchesRetrospectDTO = matchService.getClubRetrospective(id);
+        return ResponseEntity.ok().body(matchesRetrospectDTO);
     }
 }
