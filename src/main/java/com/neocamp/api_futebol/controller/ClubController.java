@@ -3,6 +3,7 @@ package com.neocamp.api_futebol.controller;
 import com.neocamp.api_futebol.dtos.request.ClubsRequestDTO;
 import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
 import com.neocamp.api_futebol.dtos.response.MatchesRetrospectDTO;
+import com.neocamp.api_futebol.dtos.response.OppRetrospectDTO;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.services.ClubService;
 import com.neocamp.api_futebol.services.MatchService;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/clubs")
@@ -60,7 +63,13 @@ public class ClubController {
 
     @GetMapping("/{id}/retrospect")
     public ResponseEntity<MatchesRetrospectDTO> getClubRetrospective(@PathVariable Long id) {
-        MatchesRetrospectDTO matchesRetrospectDTO = matchService.getClubRetrospective(id);
+        var matchesRetrospectDTO = matchService.getClubRetrospective(id);
         return ResponseEntity.ok().body(matchesRetrospectDTO);
+    }
+
+    @GetMapping("/{id}/opp/retrospect")
+    public ResponseEntity<List<OppRetrospectDTO>>  getClubOppRetrospective(@PathVariable Long id) {
+        List<OppRetrospectDTO> oppRetrospectDTOList = matchService.getOppRetrospects(id);
+        return ResponseEntity.ok().body(oppRetrospectDTOList);
     }
 }

@@ -1,5 +1,6 @@
 package com.neocamp.api_futebol.repositories;
 
+import com.neocamp.api_futebol.dtos.response.OppRetrospectDTO;
 import com.neocamp.api_futebol.entities.Match;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,4 +51,27 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
         WHERE m.homeClub.id = :id OR m.awayClub.id = :id
     """)
     List<Match> findAllMatchesForClub(Long id);
+
+    @Query("""
+    SELECT 
+        CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.id ELSE m.homeClub.id END AS opponentId,
+        CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.name ELSE m.homeClub.name END AS opponentName,
+        SUM(CASE WHEN 
+                ((m.homeClub.id = :clubId AND m.homeGoals > m.awayGoals) 
+                OR (m.awayClub.id = :clubId AND m.awayGoals > m.homeGoals)) 
+            THEN 1 ELSE 0 END) AS victories,
+        SUM(CASE WHEN m.homeGoals = m.awayGoals THEN 1 ELSE 0 END) AS draws,
+        SUM(CASE WHEN 
+                ((m.homeClub.id = :clubId AND m.homeGoals < m.awayGoals)
+                OR (m.awayClub.id = :clubId AND m.awayGoals < m.homeGoals))
+            THEN 1 ELSE 0 END) AS defeats,
+        SUM(CASE WHEN m.homeClub.id = :clubId THEN m.homeGoals ELSE m.awayGoals END) AS goalsFor,
+        SUM(CASE WHEN m.homeClub.id = :clubId THEN m.awayGoals ELSE m.homeGoals END) AS goalsAgainst
+    FROM Match m
+    WHERE m.homeClub.id = :clubId OR m.awayClub.id = :clubId
+    GROUP BY 
+        CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.id ELSE m.homeClub.id END,
+        CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.name ELSE m.homeClub.name END
+    """)
+    List<OppRetrospectDTO> findOppsStats(@Param("clubId") Long id);
 }

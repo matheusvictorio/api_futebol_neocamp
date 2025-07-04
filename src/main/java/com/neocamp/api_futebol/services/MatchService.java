@@ -4,6 +4,7 @@ import com.neocamp.api_futebol.dtos.request.MatchesRequestDTO;
 import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
 import com.neocamp.api_futebol.dtos.response.MatchesResponseDTO;
 import com.neocamp.api_futebol.dtos.response.MatchesRetrospectDTO;
+import com.neocamp.api_futebol.dtos.response.OppRetrospectDTO;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.entities.Match;
 import com.neocamp.api_futebol.entities.Stadium;
@@ -146,5 +147,13 @@ public class MatchService {
             } else defeats++;
         }
         return new MatchesRetrospectDTO(victories, draws, defeats, goalsFor, goalsAgainst);
+    }
+
+    public List<OppRetrospectDTO> getOppRetrospects(Long id) {
+        clubRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado!"));
+
+        List<OppRetrospectDTO> stats = matchRepository.findOppsStats(id);
+        return stats;
     }
 }
