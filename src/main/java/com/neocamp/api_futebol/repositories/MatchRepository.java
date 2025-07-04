@@ -1,5 +1,6 @@
 package com.neocamp.api_futebol.repositories;
 
+import com.neocamp.api_futebol.dtos.response.ClubRankingDTO;
 import com.neocamp.api_futebol.dtos.response.OppRetrospectDTO;
 import com.neocamp.api_futebol.entities.Match;
 import org.springframework.data.domain.Page;
@@ -81,4 +82,35 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             OR (m.awayClub.id = :id AND m.homeClub.id = :oppId)
     """)
     List<Match> findAllMatchesBetweenClubs(Long id, Long oppId);
+
+
+    @Query("""
+    SELECT new com.neocamp.api_futebol.dtos.response.ClubRankingDTO(
+        c.id,
+        c.name,
+        SUM(
+            CASE 
+                WHEN (m.homeClub.id = c.id AND m.homeGoals > m.awayGoals) OR
+                     (m.awayClub.id = c.id AND m.awayGoals > m.homeGoals)
+                  THEN 3
+                WHEN m.homeGoals = m.awayGoals AND (m.homeClub.id = c.id OR m.awayClub.id = c.id)
+                  THEN 1
+                ELSE 0
+            END
+        ),
+        SUM(CASE WHEN m.homeClub.id = c.id THEN m.homeGoals ELSE m.awayGoals END),
+        SUM(
+            CASE 
+                WHEN (m.homeClub.id = c.id AND m.homeGoals > m.awayGoals) OR
+                     (m.awayClub.id = c.id AND m.awayGoals > m.homeGoals)
+                  THEN 1 ELSE 0 
+            END
+        ),
+        COUNT(m)
+    )
+    FROM Club c
+    LEFT JOIN Match m ON m.homeClub.id = c.id OR m.awayClub.id = c.id
+    GROUP BY c.id, c.name
+""")
+    List<ClubRankingDTO> findClubRanking();
 }

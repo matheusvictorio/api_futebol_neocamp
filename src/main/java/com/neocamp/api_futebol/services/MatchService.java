@@ -1,10 +1,7 @@
 package com.neocamp.api_futebol.services;
 
 import com.neocamp.api_futebol.dtos.request.MatchesRequestDTO;
-import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
-import com.neocamp.api_futebol.dtos.response.MatchesResponseDTO;
-import com.neocamp.api_futebol.dtos.response.MatchesRetrospectDTO;
-import com.neocamp.api_futebol.dtos.response.OppRetrospectDTO;
+import com.neocamp.api_futebol.dtos.response.*;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.entities.Match;
 import com.neocamp.api_futebol.entities.Stadium;
@@ -19,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -187,5 +185,29 @@ public class MatchService {
         }
 
         return new OppRetrospectDTO(oppId, oppName, victories, draws, defeats, goalsFor, goalsAgainst);
+    }
+
+    public List<ClubRankingDTO> rankClubsByFilter(String filter) {
+        List<ClubRankingDTO> ranking = matchRepository.findClubRanking();
+
+        return switch(filter.toLowerCase()){
+            case "pontos" -> ranking.stream()
+                    .filter(r -> r.points() != null && r.points() > 0)
+                    .sorted(Comparator.comparing(ClubRankingDTO::points).reversed())
+                    .toList();
+            case "gols"  -> ranking.stream()
+                    .filter(r -> r.goals() != null && r.goals() > 0)
+                    .sorted(Comparator.comparing(ClubRankingDTO::goals).reversed())
+                    .toList();
+            case "vitorias" ->  ranking.stream()
+                    .filter(r -> r.victories() != null && r.victories() > 0)
+                    .sorted(Comparator.comparing(ClubRankingDTO::victories).reversed())
+                    .toList();
+            case "partidas" -> ranking.stream()
+                    .filter(r -> r.matches() != null && r.matches() > 0)
+                    .sorted(Comparator.comparing(ClubRankingDTO::matches).reversed())
+                    .toList();
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Critério inválido.");
+        };
     }
 }
