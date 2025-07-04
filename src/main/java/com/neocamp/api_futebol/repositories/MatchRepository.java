@@ -74,4 +74,11 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
         CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.name ELSE m.homeClub.name END
     """)
     List<OppRetrospectDTO> findOppsStats(@Param("clubId") Long id);
+
+    @Query("""
+    SELECT m FROM Match m
+        WHERE (m.homeClub.id = :id AND m.awayClub.id = :oppId)
+            OR (m.awayClub.id = :id AND m.homeClub.id = :oppId)
+    """)
+    List<Match> findAllMatchesBetweenClubs(Long id, Long oppId);
 }

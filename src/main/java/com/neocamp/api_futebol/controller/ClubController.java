@@ -72,4 +72,10 @@ public class ClubController {
         List<OppRetrospectDTO> oppRetrospectDTOList = matchService.getOppRetrospects(id);
         return ResponseEntity.ok().body(oppRetrospectDTOList);
     }
+
+    @GetMapping("/{id}/opp/{oppId}/retrospect")
+    public ResponseEntity<OppRetrospectDTO> getClubOneOppRetrospective(@PathVariable Long id, @PathVariable Long oppId) {
+        var oneOppRetrospectDTO = matchService.getOneOppRestrospect(id, oppId);
+        return ResponseEntity.ok().body(oneOppRetrospectDTO);
+    }
 }

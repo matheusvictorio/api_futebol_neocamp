@@ -156,4 +156,36 @@ public class MatchService {
         List<OppRetrospectDTO> stats = matchRepository.findOppsStats(id);
         return stats;
     }
+
+    public OppRetrospectDTO getOneOppRestrospect(Long id, Long oppId) {
+        clubRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado!"));
+
+        clubRepository.findById(oppId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Adversário não encontrado!"));
+
+        String oppName = clubRepository.findById(oppId).get().getName();
+
+        List<Match> matches = matchRepository.findAllMatchesBetweenClubs(id, oppId);
+
+        int victories = 0, draws = 0, defeats = 0,  goalsFor = 0, goalsAgainst = 0;
+
+        for (Match match : matches) {
+            boolean isHome = match.getHomeClub().getId().equals(id);
+
+            var clubGoals = isHome? match.getHomeGoals() : match.getAwayGoals();
+            var awayGoals = isHome? match.getAwayGoals() : match.getHomeGoals();
+
+            goalsFor += clubGoals;
+            goalsAgainst += awayGoals;
+
+            if(clubGoals > awayGoals){
+                victories++;
+            } else if(awayGoals == clubGoals){
+                draws++;
+            }  else defeats++;
+        }
+
+        return new OppRetrospectDTO(oppId, oppName, victories, draws, defeats, goalsFor, goalsAgainst);
+    }
 }
