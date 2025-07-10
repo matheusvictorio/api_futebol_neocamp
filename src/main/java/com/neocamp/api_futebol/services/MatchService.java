@@ -113,8 +113,8 @@ public class MatchService {
         );
     }
 
-    public Page<MatchesResponseDTO> searchMatches(Long clubId, Long stadiumId, Pageable pageable) {
-        Page<Match> matches = matchRepository.findWithFilters(clubId, stadiumId, pageable);
+    public Page<MatchesResponseDTO> searchMatches(Long clubId, Long stadiumId, Boolean routs, Pageable pageable) {
+        Page<Match> matches = matchRepository.findWithFilters(clubId, stadiumId, routs, pageable);
         return matches.map(m -> {
             String result = matchValidationsService.formatResult(m);
             String winner = matchValidationsService.determineWinner(m);

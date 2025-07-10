@@ -52,9 +52,10 @@ public class MatchController {
     public ResponseEntity<Page<MatchesResponseDTO>> getAll(
             @RequestParam(required = false) Long clubId,
             @RequestParam(required = false) Long stadiumId,
+            @RequestParam(required = false) Boolean routs,
             Pageable pageable
     ){
-        Page<MatchesResponseDTO> page = matchService.searchMatches(clubId, stadiumId, pageable);
+        Page<MatchesResponseDTO> page = matchService.searchMatches(clubId, stadiumId, routs, pageable);
         return ResponseEntity.ok().body(page);
     }
 }

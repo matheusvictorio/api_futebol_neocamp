@@ -40,10 +40,12 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
         SELECT m FROM Match m
         WHERE (:clubId IS NULL OR m.homeClub.id = :clubId OR m.awayClub.id = :clubId)
           AND (:stadiumId IS NULL OR m.stadium.id = :stadiumId)
+            AND (:routs IS NULL OR :routs = TRUE AND ABS(m.homeGoals - m.awayGoals) >= 3)
     """)
     Page<Match> findWithFilters(
             @Param("clubId") Long clubId,
             @Param("stadiumId") Long stadiumId,
+            @Param("routs") Boolean routs,
             Pageable pageable
     );
 
