@@ -3,6 +3,9 @@ package com.neocamp.api_futebol.services;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.entities.Match;
 import com.neocamp.api_futebol.entities.Stadium;
+import com.neocamp.api_futebol.exception.BadRequestException;
+import com.neocamp.api_futebol.exception.ConflictException;
+import com.neocamp.api_futebol.exception.NotFoundException;
 import com.neocamp.api_futebol.repositories.ClubRepository;
 import com.neocamp.api_futebol.repositories.MatchRepository;
 import com.neocamp.api_futebol.repositories.StadiumRepository;
@@ -24,43 +27,43 @@ public class MatchValidationsService {
 
     public void validateNotSameClubs(Club home, Club away){
         if(home.getId().equals(away.getId())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clubes não podem ser iguais!");
+            throw new BadRequestException("Clubes não podem ser iguais!");
         }
     }
     public void validateClubsActive(Club home, Club away){
         if(!home.getActive() || !away.getActive()){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Clube inativo!");
+            throw new ConflictException("Clube inativo!");
         }
     }
 
     public void validateDateAfterFoundation(LocalDateTime matchDateTime, Club home, Club away){
         if(matchDateTime.toLocalDate().isBefore(home.getCreatedAt())
         || matchDateTime.toLocalDate().isBefore(away.getCreatedAt())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Partida não pode ser criada antes da fundação de algum dos clubes!");
+            throw new ConflictException("Partida não pode ser criada antes da fundação de algum dos clubes!");
         }
     }
 
     public void validateNoNearMatches(Club home, Club away, LocalDateTime matchDateTime){
         if(!matchRepository.findMatchesNearDateForClub(home.getId(), matchDateTime).isEmpty()
             || !matchRepository.findMatchesNearDateForClub(away.getId(), matchDateTime).isEmpty()){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Clubes possuem partidas próximas!");
+            throw new ConflictException("Clubes possuem partidas próximas!");
         }
     }
 
     public void validateStadiumAvailable(Stadium stadium, LocalDateTime matchDateTime){
         if(!matchRepository.findByStadiumAndDay(stadium.getId(), matchDateTime).isEmpty()){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Estádio já tem partida no mesmo dia.");
+            throw new ConflictException("Estádio já tem partida no mesmo dia.");
         }
     }
 
     public Club findClubOrThrow(Long clubId){
         return clubRepository.findById(clubId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clube não encontrado!"));
+                .orElseThrow(() -> new BadRequestException("Clube não encontrado!"));
     }
 
     public Stadium findStadiumOrThrow(Long stadiumId){
         return stadiumRepository.findById(stadiumId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estádio não encontrado!"));
+                .orElseThrow(() -> new BadRequestException("Estádio não encontrado!"));
     }
 
     public String determineWinner(Match match) {

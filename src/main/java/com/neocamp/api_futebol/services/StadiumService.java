@@ -4,6 +4,9 @@ import com.neocamp.api_futebol.dtos.request.StadiumRequestDTO;
 import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
 import com.neocamp.api_futebol.dtos.response.StadiumResponseDTO;
 import com.neocamp.api_futebol.entities.Stadium;
+import com.neocamp.api_futebol.exception.BadRequestException;
+import com.neocamp.api_futebol.exception.ConflictException;
+import com.neocamp.api_futebol.exception.NotFoundException;
 import com.neocamp.api_futebol.repositories.StadiumRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +23,7 @@ public class StadiumService {
 
     public StadiumResponseDTO createStadium(StadiumRequestDTO stadiumRequestDTO) {
         if (stadiumRepository.existsByNameIgnoreCase(stadiumRequestDTO.name())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Estádio ja existe!");
+            throw new ConflictException("Estádio ja existe!");
         }
         Stadium stadium = new Stadium();
         stadium.setName(stadiumRequestDTO.name());
@@ -30,10 +33,10 @@ public class StadiumService {
 
     public StadiumResponseDTO updateStadium(Long id, @Valid StadiumRequestDTO stadiumRequestDTO) {
         Stadium stadium = stadiumRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Estádio não encontrado!"));
+                .orElseThrow(() -> new NotFoundException("Estádio não encontrado!"));
 
         if (stadiumRepository.existsByNameIgnoreCase(stadiumRequestDTO.name())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Estádio ja existe!");
+            throw new ConflictException("Estádio ja existe!");
         }
         stadium.setName(stadiumRequestDTO.name());
         stadiumRepository.save(stadium);
@@ -42,9 +45,9 @@ public class StadiumService {
 
     public void deleteStadium(Long id) {
         var stadium = stadiumRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Estádio não encontrado"));
+                .orElseThrow(() -> new NotFoundException("Estádio não encontrado"));
         if (!stadium.getActive()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Clube já está inativo!");
+            throw new ConflictException("Clube já está inativo!");
         }
         stadium.delete();
         stadiumRepository.save(stadium);
@@ -52,7 +55,7 @@ public class StadiumService {
 
     public StadiumResponseDTO findById(Long id) {
         var stadium =  stadiumRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado ou inativo"));;
+                .orElseThrow(() -> new NotFoundException("Clube não encontrado ou inativo"));;
         return new StadiumResponseDTO(stadium.getId(), stadium.getName(), stadium.getActive());
     }
 

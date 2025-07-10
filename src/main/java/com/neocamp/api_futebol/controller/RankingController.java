@@ -19,7 +19,7 @@ public class RankingController {
     private MatchService matchService;
 
     @GetMapping
-    public ResponseEntity<List<ClubRankingDTO>> getRanking(@RequestParam String filter) {
+    public ResponseEntity<List<ClubRankingDTO>> getRanking(@RequestParam(defaultValue = "pontos") String filter) {
         List<ClubRankingDTO> clubRankingDTOList = matchService.rankClubsByFilter(filter);
         return ResponseEntity.ok(clubRankingDTOList);
     }

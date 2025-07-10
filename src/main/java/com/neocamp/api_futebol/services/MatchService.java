@@ -5,6 +5,8 @@ import com.neocamp.api_futebol.dtos.response.*;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.entities.Match;
 import com.neocamp.api_futebol.entities.Stadium;
+import com.neocamp.api_futebol.exception.BadRequestException;
+import com.neocamp.api_futebol.exception.NotFoundException;
 import com.neocamp.api_futebol.repositories.ClubRepository;
 import com.neocamp.api_futebol.repositories.MatchRepository;
 import com.neocamp.api_futebol.repositories.StadiumRepository;
@@ -58,7 +60,7 @@ public class MatchService {
 
     public MatchesResponseDTO updateMatch(Long id, MatchesRequestDTO matchesRequestDTO) {
         Match match = matchRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Partida não encontrada!"));
+                .orElseThrow(() -> new NotFoundException("Partida não encontrada!"));
 
         Club homeClub = matchValidationsService.findClubOrThrow(matchesRequestDTO.homeClubId());
         Club awayClub =  matchValidationsService.findClubOrThrow(matchesRequestDTO.awayClubId());
@@ -95,7 +97,7 @@ public class MatchService {
 
     public MatchesResponseDTO findById(Long id) {
         var match = matchRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Partida não encontrada!"));
+                .orElseThrow(() -> new NotFoundException("Partida não encontrada!"));
 
         String result = matchValidationsService.formatResult(match);
         String winner = matchValidationsService.determineWinner(match);
@@ -122,7 +124,7 @@ public class MatchService {
 
     public MatchesRetrospectDTO getClubRetrospective(Long id) {
         clubRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado!"));
+                .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
 
         List<Match> matches = matchRepository.findAllMatchesForClub(id);
 
@@ -149,7 +151,7 @@ public class MatchService {
 
     public List<OppRetrospectDTO> getOppRetrospects(Long id) {
         clubRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado!"));
+                .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
 
         List<OppRetrospectDTO> stats = matchRepository.findOppsStats(id);
         return stats;
@@ -157,10 +159,10 @@ public class MatchService {
 
     public OppRetrospectDTO getOneOppRestrospect(Long id, Long oppId) {
         clubRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clube não encontrado!"));
+                .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
 
         clubRepository.findById(oppId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Adversário não encontrado!"));
+                .orElseThrow(() -> new NotFoundException("Adversário não encontrado!"));
 
         String oppName = clubRepository.findById(oppId).get().getName();
 
@@ -171,8 +173,8 @@ public class MatchService {
         for (Match match : matches) {
             boolean isHome = match.getHomeClub().getId().equals(id);
 
-            var clubGoals = isHome? match.getHomeGoals() : match.getAwayGoals();
-            var awayGoals = isHome? match.getAwayGoals() : match.getHomeGoals();
+            int clubGoals = isHome? match.getHomeGoals() : match.getAwayGoals();
+            int awayGoals = isHome? match.getAwayGoals() : match.getHomeGoals();
 
             goalsFor += clubGoals;
             goalsAgainst += awayGoals;
@@ -207,7 +209,7 @@ public class MatchService {
                     .filter(r -> r.matches() != null && r.matches() > 0)
                     .sorted(Comparator.comparing(ClubRankingDTO::matches).reversed())
                     .toList();
-            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Critério inválido.");
+            default -> throw new BadRequestException("Filtro inválido!");
         };
     }
 }
