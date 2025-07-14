@@ -113,8 +113,8 @@ public class MatchService {
         );
     }
 
-    public Page<MatchesResponseDTO> searchMatches(Long clubId, Long stadiumId, Boolean routs, Pageable pageable) {
-        Page<Match> matches = matchRepository.findWithFilters(clubId, stadiumId, routs, pageable);
+    public Page<MatchesResponseDTO> searchMatches(Long clubId, Long stadiumId, Boolean routs, String side, Pageable pageable) {
+        Page<Match> matches = matchRepository.findWithFilters(clubId, stadiumId, routs, side, pageable);
         return matches.map(m -> {
             String result = matchValidationsService.formatResult(m);
             String winner = matchValidationsService.determineWinner(m);
@@ -122,13 +122,23 @@ public class MatchService {
         });
     }
 
-    public MatchesRetrospectDTO getClubRetrospective(Long id) {
+    public MatchesRetrospectDTO getClubRetrospective(Long id, String side) {
         clubRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
 
-        List<Match> matches = matchRepository.findAllMatchesForClub(id);
+        List<Match> matches;
 
-        int victories = 0, draws = 0, defeats = 0, goalsFor = 0, goalsAgainst = 0;
+        if ("casa".equalsIgnoreCase(side)) {
+            matches = matchRepository.findAllHomeMatchesForClub(id);
+        } else if ("fora".equalsIgnoreCase(side)) {
+            matches = matchRepository.findAllAwayMatchesForClub(id);
+        } else {
+            matches = matchRepository.findAllMatchesForClub(id);
+        }
+
+        String clubName = clubRepository.findById(id).get().getName();
+
+        int matchesQuantity = 0, victories = 0, draws = 0, defeats = 0, goalsFor = 0, goalsAgainst = 0;
 
         for (Match match : matches) {
             boolean isHome = match.getHomeClub().getId().equals(id);
@@ -145,19 +155,21 @@ public class MatchService {
             } else if(oppGoals == clubGoals){
                 draws++;
             } else defeats++;
+
+            matchesQuantity++;
         }
-        return new MatchesRetrospectDTO(victories, draws, defeats, goalsFor, goalsAgainst);
+        return new MatchesRetrospectDTO(clubName, matchesQuantity, victories, draws, defeats, goalsFor, goalsAgainst);
     }
 
-    public List<OppRetrospectDTO> getOppRetrospects(Long id) {
+    public List<OppRetrospectDTO> getOppRetrospects(Long id, String side) {
         clubRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
 
-        List<OppRetrospectDTO> stats = matchRepository.findOppsStats(id);
+        List<OppRetrospectDTO> stats = matchRepository.findOppsStats(id, side);
         return stats;
     }
 
-    public OppRetrospectDTO getOneOppRestrospect(Long id, Long oppId) {
+    public OppRetrospectDTO getOneOppRestrospect(Long id, Long oppId, String side) {
         clubRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
 
@@ -166,9 +178,9 @@ public class MatchService {
 
         String oppName = clubRepository.findById(oppId).get().getName();
 
-        List<Match> matches = matchRepository.findAllMatchesBetweenClubs(id, oppId);
+        List<Match> matches = matchRepository.findAllMatchesBetweenClubs(id, oppId, side);
 
-        int victories = 0, draws = 0, defeats = 0,  goalsFor = 0, goalsAgainst = 0;
+        Long matchesQuantity = 0L, victories = 0L, draws = 0L, defeats = 0L,  goalsFor = 0L, goalsAgainst = 0L;
 
         for (Match match : matches) {
             boolean isHome = match.getHomeClub().getId().equals(id);
@@ -184,9 +196,11 @@ public class MatchService {
             } else if(awayGoals == clubGoals){
                 draws++;
             }  else defeats++;
+
+            matchesQuantity++;
         }
 
-        return new OppRetrospectDTO(oppId, oppName, victories, draws, defeats, goalsFor, goalsAgainst);
+        return new OppRetrospectDTO(oppId, oppName, matchesQuantity, victories, draws, defeats, goalsFor, goalsAgainst);
     }
 
     public List<ClubRankingDTO> rankClubsByFilter(String filter) {

@@ -62,20 +62,20 @@ public class ClubController {
     }
 
     @GetMapping("/{id}/retrospect")
-    public ResponseEntity<MatchesRetrospectDTO> getClubRetrospective(@PathVariable Long id) {
-        var matchesRetrospectDTO = matchService.getClubRetrospective(id);
+    public ResponseEntity<MatchesRetrospectDTO> getClubRetrospective(@PathVariable Long id, @RequestParam(required = false) String side) {
+        var matchesRetrospectDTO = matchService.getClubRetrospective(id, side);
         return ResponseEntity.ok().body(matchesRetrospectDTO);
     }
 
     @GetMapping("/{id}/opp/retrospect")
-    public ResponseEntity<List<OppRetrospectDTO>>  getClubOppRetrospective(@PathVariable Long id) {
-        List<OppRetrospectDTO> oppRetrospectDTOList = matchService.getOppRetrospects(id);
+    public ResponseEntity<List<OppRetrospectDTO>>  getClubOppRetrospective(@PathVariable Long id, @RequestParam(required = false) String side) {
+        List<OppRetrospectDTO> oppRetrospectDTOList = matchService.getOppRetrospects(id, side);
         return ResponseEntity.ok().body(oppRetrospectDTOList);
     }
 
     @GetMapping("/{id}/opp/{oppId}/retrospect")
-    public ResponseEntity<OppRetrospectDTO> getClubOneOppRetrospective(@PathVariable Long id, @PathVariable Long oppId) {
-        var oneOppRetrospectDTO = matchService.getOneOppRestrospect(id, oppId);
+    public ResponseEntity<OppRetrospectDTO> getClubOneOppRetrospective(@PathVariable Long id, @PathVariable Long oppId, @RequestParam(required = false) String side) {
+        var oneOppRetrospectDTO = matchService.getOneOppRestrospect(id, oppId, side);
         return ResponseEntity.ok().body(oneOppRetrospectDTO);
     }
 }

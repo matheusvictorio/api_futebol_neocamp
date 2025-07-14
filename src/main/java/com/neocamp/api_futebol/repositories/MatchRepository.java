@@ -41,11 +41,13 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
         WHERE (:clubId IS NULL OR m.homeClub.id = :clubId OR m.awayClub.id = :clubId)
           AND (:stadiumId IS NULL OR m.stadium.id = :stadiumId)
             AND (:routs IS NULL OR :routs = TRUE AND ABS(m.homeGoals - m.awayGoals) >= 3)
+                AND (:side IS NULL OR (:side = 'casa' AND m.homeClub.id = :clubId) OR (:side = 'fora' AND m.awayClub.id = :clubId))
     """)
     Page<Match> findWithFilters(
             @Param("clubId") Long clubId,
             @Param("stadiumId") Long stadiumId,
             @Param("routs") Boolean routs,
+            @Param("side") String side,
             Pageable pageable
     );
 
@@ -56,34 +58,39 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findAllMatchesForClub(Long id);
 
     @Query("""
-    SELECT 
+    SELECT
         CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.id ELSE m.homeClub.id END AS opponentId,
         CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.name ELSE m.homeClub.name END AS opponentName,
-        SUM(CASE WHEN 
-                ((m.homeClub.id = :clubId AND m.homeGoals > m.awayGoals) 
-                OR (m.awayClub.id = :clubId AND m.awayGoals > m.homeGoals)) 
+        SUM(CASE WHEN
+                ((m.homeClub.id = :clubId AND m.homeGoals > m.awayGoals)
+                OR (m.awayClub.id = :clubId AND m.awayGoals > m.homeGoals))
             THEN 1 ELSE 0 END) AS victories,
         SUM(CASE WHEN m.homeGoals = m.awayGoals THEN 1 ELSE 0 END) AS draws,
-        SUM(CASE WHEN 
+        SUM(CASE WHEN
                 ((m.homeClub.id = :clubId AND m.homeGoals < m.awayGoals)
                 OR (m.awayClub.id = :clubId AND m.awayGoals < m.homeGoals))
             THEN 1 ELSE 0 END) AS defeats,
         SUM(CASE WHEN m.homeClub.id = :clubId THEN m.homeGoals ELSE m.awayGoals END) AS goalsFor,
         SUM(CASE WHEN m.homeClub.id = :clubId THEN m.awayGoals ELSE m.homeGoals END) AS goalsAgainst
     FROM Match m
-    WHERE m.homeClub.id = :clubId OR m.awayClub.id = :clubId
-    GROUP BY 
+    WHERE 
+        (m.homeClub.id = :clubId OR m.awayClub.id = :clubId)
+        AND (:side IS NULL OR (:side = 'casa' AND m.homeClub.id = :clubId) OR (:side = 'fora' AND m.awayClub.id = :clubId))
+    GROUP BY
         CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.id ELSE m.homeClub.id END,
         CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.name ELSE m.homeClub.name END
     """)
-    List<OppRetrospectDTO> findOppsStats(@Param("clubId") Long id);
+    List<OppRetrospectDTO> findOppsStats(@Param("clubId") Long id, @Param("side") String side);
 
     @Query("""
     SELECT m FROM Match m
-        WHERE (m.homeClub.id = :id AND m.awayClub.id = :oppId)
+        WHERE (
+            (m.homeClub.id = :id AND m.awayClub.id = :oppId)
             OR (m.awayClub.id = :id AND m.homeClub.id = :oppId)
+                )
+                AND (:side IS NULL OR (:side = 'casa' AND m.homeClub.id = :id) OR (:side = 'fora' AND m.awayClub.id = :id))
     """)
-    List<Match> findAllMatchesBetweenClubs(Long id, Long oppId);
+    List<Match> findAllMatchesBetweenClubs(Long id, Long oppId, String side);
 
 
     @Query("""
@@ -115,4 +122,16 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     GROUP BY c.id, c.name
 """)
     List<ClubRankingDTO> findClubRanking();
+
+    @Query("""
+    SELECT m FROM Match m
+        WHERE m.homeClub.id = :id
+    """)
+    List<Match> findAllHomeMatchesForClub(Long id);
+
+    @Query("""
+    SELECT m FROM Match m
+        WHERE m.awayClub.id = :id
+    """)
+    List<Match> findAllAwayMatchesForClub(Long id);
 }
