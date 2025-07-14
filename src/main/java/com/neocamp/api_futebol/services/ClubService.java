@@ -5,9 +5,11 @@ import com.neocamp.api_futebol.dtos.request.ClubsRequestDTO;
 import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.entities.State;
+import com.neocamp.api_futebol.exception.ConflictException;
 import com.neocamp.api_futebol.repositories.ClubRepository;
 import com.neocamp.api_futebol.exception.NotFoundException;
 import com.neocamp.api_futebol.exception.BadRequestException;
+import com.neocamp.api_futebol.repositories.MatchRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,8 @@ import java.util.Optional;
 
 @Service
 public class ClubService {
+    @Autowired
+    private MatchRepository matchRepository;
     @Autowired
     private ClubRepository clubRepository;
 
@@ -35,6 +39,11 @@ public class ClubService {
         Club club = clubRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Clube não encontrado"));
         validarConflitoNomeEstado(dto.name(), dto.state(), id);
+        boolean hasMatchBeforeCreatedAt = matchRepository.existsMatchBeforeCreatedAt(id, dto.createdAt().atStartOfDay());
+        if (hasMatchBeforeCreatedAt) {
+            throw new ConflictException("Data de criação não pode ser posterior à alguma partida já registrada");
+        }
+
         club.setName(dto.name());
         club.setState(dto.state());
         club.setCreatedAt(dto.createdAt());

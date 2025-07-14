@@ -3,12 +3,15 @@ package com.neocamp.api_futebol.repositories;
 import com.neocamp.api_futebol.dtos.response.ClubRankingDTO;
 import com.neocamp.api_futebol.dtos.response.OppRetrospectDTO;
 import com.neocamp.api_futebol.entities.Match;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -134,4 +137,10 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
         WHERE m.awayClub.id = :id
     """)
     List<Match> findAllAwayMatchesForClub(Long id);
+
+    @Query("""
+    SELECT COUNT(m) > 0 FROM Match m 
+        WHERE (m.homeClub.id = :clubId OR m.awayClub.id = :clubId)
+             AND m.matchDateTime < :date""")
+    boolean existsMatchBeforeCreatedAt(@Param("clubId") Long clubId, @Param("date") java.time.LocalDateTime date);
 }
