@@ -28,15 +28,6 @@ public class Match {
     @Column(nullable = false)
     private Integer awayGoals;
 
-    public Match(Long id, Club homeClub, Club awayClub, Stadium stadium, LocalDateTime matchDateTime, Integer homeGoals, Integer awayGoals) {
-        this.id = id;
-        this.homeClub = homeClub;
-        this.awayClub = awayClub;
-        this.stadium = stadium;
-        this.matchDateTime = matchDateTime;
-        this.homeGoals = homeGoals;
-        this.awayGoals = awayGoals;
-    }
 
     public Match() {
     }
@@ -45,9 +36,7 @@ public class Match {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+
 
     public Club getHomeClub() {
         return homeClub;

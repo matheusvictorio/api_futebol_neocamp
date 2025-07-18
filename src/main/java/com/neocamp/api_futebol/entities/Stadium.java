@@ -11,8 +11,8 @@ public class Stadium {
     private String name;
     private Boolean active = true;
 
-    public Stadium(Long id, String name) {
-        this.id = id;
+
+    public Stadium(String name) {
         this.name = name;
         this.active = true;
     }
@@ -23,9 +23,7 @@ public class Stadium {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+
 
     public String getName() {
         return name;

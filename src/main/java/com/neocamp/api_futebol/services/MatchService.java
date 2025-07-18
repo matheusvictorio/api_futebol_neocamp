@@ -29,6 +29,8 @@ public class MatchService {
     private MatchValidationsService matchValidationsService;
     @Autowired
     private ClubRepository clubRepository;
+    @Autowired
+    private StadiumRepository stadiumRepository;
 
     public MatchesResponseDTO createMatch(@Valid MatchesRequestDTO matchesRequestDTO) {
         Club homeClub = matchValidationsService.findClubOrThrow(matchesRequestDTO.homeClubId());
@@ -69,8 +71,8 @@ public class MatchService {
         matchValidationsService.validateNotSameClubs(homeClub, awayClub);
         matchValidationsService.validateClubsActive(homeClub, awayClub);
         matchValidationsService.validateDateAfterFoundation(matchesRequestDTO.matchDateTime(), homeClub, awayClub);
-        matchValidationsService.validateNoNearMatches(homeClub, awayClub, matchesRequestDTO.matchDateTime());
-        matchValidationsService.validateStadiumAvailable(stadium, matchesRequestDTO.matchDateTime());
+        matchValidationsService.validateNoNearMatches(homeClub, awayClub, matchesRequestDTO.matchDateTime(), id);
+        matchValidationsService.validateStadiumAvailable(stadium, matchesRequestDTO.matchDateTime(), id);
 
         match.setHomeClub(homeClub);
         match.setAwayClub(awayClub);
@@ -91,7 +93,10 @@ public class MatchService {
         );
     }
 
-    public void deleteClub(Long id) {
+    public void deleteMatch(Long id) {
+        if (!matchRepository.existsById(id)) {
+            throw new NotFoundException("Partida não encontrada!");
+        }
         matchRepository.deleteById(id);
     }
 
@@ -114,6 +119,15 @@ public class MatchService {
     }
 
     public Page<MatchesResponseDTO> searchMatches(Long clubId, Long stadiumId, Boolean routs, String side, Pageable pageable) {
+        if (clubId != null && !clubRepository.existsById(clubId)) {
+            throw new NotFoundException("Clube não encontrado!");
+        }
+        if (stadiumId != null && !stadiumRepository.existsById(stadiumId)) {
+            throw new NotFoundException("Estádio não encontrado!");
+        }
+        if (side != null && !side.equalsIgnoreCase("casa") && !side.equalsIgnoreCase("fora")) {
+            throw new BadRequestException("Lado inválido!");
+        }
         Page<Match> matches = matchRepository.findWithFilters(clubId, stadiumId, routs, side, pageable);
         return matches.map(m -> {
             String result = matchValidationsService.formatResult(m);
@@ -127,6 +141,10 @@ public class MatchService {
                 .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
 
         List<Match> matches;
+
+        if (side != null &&!side.equalsIgnoreCase("casa") && !side.equalsIgnoreCase("fora")) {
+            throw new BadRequestException("Lado inválido!");
+        }
 
         if ("casa".equalsIgnoreCase(side)) {
             matches = matchRepository.findAllHomeMatchesForClub(id);
@@ -165,6 +183,9 @@ public class MatchService {
         clubRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
 
+        if (side != null &&!side.equalsIgnoreCase("casa") && !side.equalsIgnoreCase("fora")) {
+            throw new BadRequestException("Lado inválido!");
+        }
         List<OppRetrospectDTO> stats = matchRepository.findOppsStats(id, side);
         return stats;
     }
@@ -176,8 +197,11 @@ public class MatchService {
         clubRepository.findById(oppId)
                 .orElseThrow(() -> new NotFoundException("Adversário não encontrado!"));
 
-        String oppName = clubRepository.findById(oppId).get().getName();
 
+        String oppName = clubRepository.findById(oppId).get().getName();
+        if (side != null &&!side.equalsIgnoreCase("casa") && !side.equalsIgnoreCase("fora")) {
+            throw new BadRequestException("Lado inválido!");
+        }
         List<Match> matches = matchRepository.findAllMatchesBetweenClubs(id, oppId, side);
 
         Long matchesQuantity = 0L, victories = 0L, draws = 0L, defeats = 0L,  goalsFor = 0L, goalsAgainst = 0L;

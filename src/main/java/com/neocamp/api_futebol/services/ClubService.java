@@ -54,7 +54,7 @@ public class ClubService {
     private void validarConflitoNomeEstado(String name, State state, Long currentId) {
         Optional<Club> clubOpt = clubRepository.findByNameIgnoreCaseAndState(name, state);
         if (clubOpt.isPresent() && !clubOpt.get().getId().equals(currentId)) {
-            throw new BadRequestException("Já existe outro clube com esse nome e estado");
+            throw new ConflictException("Já existe outro clube com esse nome e estado");
         }
     }
 
@@ -75,7 +75,7 @@ public class ClubService {
     }
 
 
-    public Page<ClubsResponseDTO> searchClubs(String name, String state, Boolean active, Pageable pageable) {
+    public Page<ClubsResponseDTO> searchClubs(String name, State state, Boolean active, Pageable pageable) {
         return clubRepository.findWithFilter(name, state, active, pageable)
                 .map(ClubsResponseDTO::new);
 

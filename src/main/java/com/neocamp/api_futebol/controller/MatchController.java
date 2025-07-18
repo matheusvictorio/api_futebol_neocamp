@@ -7,9 +7,11 @@ import com.neocamp.api_futebol.repositories.MatchRepository;
 import com.neocamp.api_futebol.services.ClubService;
 import com.neocamp.api_futebol.services.MatchService;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +21,6 @@ import org.springframework.web.bind.annotation.*;
 public class MatchController {
     @Autowired
     private MatchService matchService;
-    @Autowired
-    private ClubService clubService;
-    @Autowired
-    private MatchRepository matchRepository;
 
     @PostMapping
     public ResponseEntity<MatchesResponseDTO> createMatch(@RequestBody @Valid MatchesRequestDTO matchesRequestDTO) {
@@ -38,7 +36,7 @@ public class MatchController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity deleteMatch(@PathVariable Long id) {
-        matchService.deleteClub(id);
+        matchService.deleteMatch(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -54,6 +52,8 @@ public class MatchController {
             @RequestParam(required = false) Long stadiumId,
             @RequestParam(required = false) Boolean routs,
             @RequestParam(required = false) String side,
+            @ParameterObject
+            @PageableDefault(sort = "matchDateTime", size =  10, page = 0)
             Pageable pageable
     ){
         Page<MatchesResponseDTO> page = matchService.searchMatches(clubId, stadiumId, routs, side, pageable);

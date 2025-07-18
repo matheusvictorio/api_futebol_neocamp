@@ -2,12 +2,14 @@ package com.neocamp.api_futebol;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
 class ApiDePartidasDeFutebolApplicationTests {
 
     @Test
-    void contextLoads() {
+    void mainRuns() {
+        System.setProperty("spring.profiles.active", "test");
+        ApiDePartidasDeFutebolApplication.main(new String[] {});
     }
 
 }

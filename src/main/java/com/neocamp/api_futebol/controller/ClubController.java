@@ -4,7 +4,7 @@ import com.neocamp.api_futebol.dtos.request.ClubsRequestDTO;
 import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
 import com.neocamp.api_futebol.dtos.response.MatchesRetrospectDTO;
 import com.neocamp.api_futebol.dtos.response.OppRetrospectDTO;
-import com.neocamp.api_futebol.entities.Club;
+import com.neocamp.api_futebol.entities.State;
 import com.neocamp.api_futebol.services.ClubService;
 import com.neocamp.api_futebol.services.MatchService;
 import jakarta.validation.Valid;
@@ -53,10 +53,10 @@ public class ClubController {
     @GetMapping
     public ResponseEntity<Page<ClubsResponseDTO>> getAll(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String state,
+            @RequestParam(required = false) State state,
             @RequestParam(required = false) Boolean active,
             Pageable pageable
-    ){
+    ) {
         Page<ClubsResponseDTO> page = clubService.searchClubs(name, state, active, pageable);
         return ResponseEntity.ok().body(page);
     }
@@ -68,7 +68,7 @@ public class ClubController {
     }
 
     @GetMapping("/{id}/opp/retrospect")
-    public ResponseEntity<List<OppRetrospectDTO>>  getClubOppRetrospective(@PathVariable Long id, @RequestParam(required = false) String side) {
+    public ResponseEntity<List<OppRetrospectDTO>> getClubOppRetrospective(@PathVariable Long id, @RequestParam(required = false) String side) {
         List<OppRetrospectDTO> oppRetrospectDTOList = matchService.getOppRetrospects(id, side);
         return ResponseEntity.ok().body(oppRetrospectDTOList);
     }

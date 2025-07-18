@@ -25,12 +25,11 @@ public interface ClubRepository extends JpaRepository<Club, Long> {
     Optional<Club> findByIdAndActiveTrue(Long id);
 
     @Query("""
-
             SELECT c FROM Club c
     WHERE (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%')))
     AND (:state IS NULL OR c.state = :state)
     AND (:active IS NULL OR c.active = :active)
     """
     )
-    Page<Club> findWithFilter(String name, String state, Boolean active, Pageable pageable);
+    Page<Club> findWithFilter(String name, State state, Boolean active, Pageable pageable);
 }

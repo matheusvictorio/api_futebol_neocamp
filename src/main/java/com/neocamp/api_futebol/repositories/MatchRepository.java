@@ -28,6 +28,19 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             @Param("dateTime") LocalDateTime dateTime
     );
 
+    @Query(
+            value = "SELECT * FROM matches m " +
+                    "WHERE m.stadium_id = :stadiumId " +
+                    "AND DATE(m.match_date_time) = DATE(:dateTime) " +
+                    "AND m.id <> :matchId",
+            nativeQuery = true
+    )
+    List<Match> findByStadiumAndDayIgnoringMatch(
+            @Param("stadiumId") Long stadiumId,
+            @Param("dateTime") LocalDateTime dateTime,
+            @Param("matchId") Long matchId
+    );
+
     // Checa partidas próximas de um clube (+/- 48 horas)
     @Query(
             value = "SELECT * FROM matches m " +
@@ -38,6 +51,19 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findMatchesNearDateForClub(
             @Param("clubId") Long clubId,
             @Param("dateTime") LocalDateTime dateTime
+    );
+
+    @Query(
+            value = "SELECT * FROM matches m " +
+                    "WHERE m.id <> :matchId " +
+                    "AND (m.home_club_id = :clubId OR m.away_club_id = :clubId) " +
+                    "AND ABS(TIMESTAMPDIFF(HOUR, m.match_date_time, :dateTime)) < 48",
+            nativeQuery = true
+    )
+    List<Match> findMatchesNearDateForClubIgnoringMatch(
+            @Param("clubId") Long clubId,
+            @Param("dateTime") LocalDateTime dateTime,
+            @Param("matchId") Long matchId
     );
     @Query("""
         SELECT m FROM Match m
@@ -61,27 +87,28 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findAllMatchesForClub(Long id);
 
     @Query("""
-    SELECT
-        CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.id ELSE m.homeClub.id END AS opponentId,
-        CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.name ELSE m.homeClub.name END AS opponentName,
-        SUM(CASE WHEN
-                ((m.homeClub.id = :clubId AND m.homeGoals > m.awayGoals)
-                OR (m.awayClub.id = :clubId AND m.awayGoals > m.homeGoals))
-            THEN 1 ELSE 0 END) AS victories,
-        SUM(CASE WHEN m.homeGoals = m.awayGoals THEN 1 ELSE 0 END) AS draws,
-        SUM(CASE WHEN
-                ((m.homeClub.id = :clubId AND m.homeGoals < m.awayGoals)
-                OR (m.awayClub.id = :clubId AND m.awayGoals < m.homeGoals))
-            THEN 1 ELSE 0 END) AS defeats,
-        SUM(CASE WHEN m.homeClub.id = :clubId THEN m.homeGoals ELSE m.awayGoals END) AS goalsFor,
-        SUM(CASE WHEN m.homeClub.id = :clubId THEN m.awayGoals ELSE m.homeGoals END) AS goalsAgainst
-    FROM Match m
-    WHERE 
-        (m.homeClub.id = :clubId OR m.awayClub.id = :clubId)
-        AND (:side IS NULL OR (:side = 'casa' AND m.homeClub.id = :clubId) OR (:side = 'fora' AND m.awayClub.id = :clubId))
-    GROUP BY
-        CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.id ELSE m.homeClub.id END,
-        CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.name ELSE m.homeClub.name END
+            SELECT
+            CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.id ELSE m.homeClub.id END AS opponentId,
+            CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.name ELSE m.homeClub.name END AS opponentName,
+            COUNT(m) AS matches,
+            SUM(CASE WHEN
+                    ((m.homeClub.id = :clubId AND m.homeGoals > m.awayGoals)
+                    OR (m.awayClub.id = :clubId AND m.awayGoals > m.homeGoals))
+                THEN 1 ELSE 0 END) AS victories,
+            SUM(CASE WHEN m.homeGoals = m.awayGoals THEN 1 ELSE 0 END) AS draws,
+            SUM(CASE WHEN
+                    ((m.homeClub.id = :clubId AND m.homeGoals < m.awayGoals)
+                    OR (m.awayClub.id = :clubId AND m.awayGoals < m.homeGoals))
+                THEN 1 ELSE 0 END) AS defeats,
+            SUM(CASE WHEN m.homeClub.id = :clubId THEN m.homeGoals ELSE m.awayGoals END) AS goalsFor,
+            SUM(CASE WHEN m.homeClub.id = :clubId THEN m.awayGoals ELSE m.homeGoals END) AS goalsAgainst
+        FROM Match m
+        WHERE\s
+            (m.homeClub.id = :clubId OR m.awayClub.id = :clubId)
+            AND (:side IS NULL OR (:side = 'casa' AND m.homeClub.id = :clubId) OR (:side = 'fora' AND m.awayClub.id = :clubId))
+        GROUP BY
+            CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.id ELSE m.homeClub.id END,
+            CASE WHEN m.homeClub.id = :clubId THEN m.awayClub.name ELSE m.homeClub.name END
     """)
     List<OppRetrospectDTO> findOppsStats(@Param("clubId") Long id, @Param("side") String side);
 

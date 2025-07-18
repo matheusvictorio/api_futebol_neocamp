@@ -1,6 +1,5 @@
 package com.neocamp.api_futebol.controller;
 
-import com.neocamp.api_futebol.dtos.request.MatchesRequestDTO;
 import com.neocamp.api_futebol.dtos.request.StadiumRequestDTO;
 import com.neocamp.api_futebol.dtos.response.StadiumResponseDTO;
 import com.neocamp.api_futebol.services.StadiumService;
@@ -20,7 +19,7 @@ public class StadiumController {
     private StadiumService stadiumService;
 
     @PostMapping
-    public ResponseEntity<StadiumResponseDTO> createMatch(@RequestBody @Valid StadiumRequestDTO stadiumRequestDTO){
+    public ResponseEntity<StadiumResponseDTO> createStadium(@RequestBody @Valid StadiumRequestDTO stadiumRequestDTO){
         StadiumResponseDTO stadiumResponseDTO = stadiumService.createStadium(stadiumRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(stadiumResponseDTO);
     }

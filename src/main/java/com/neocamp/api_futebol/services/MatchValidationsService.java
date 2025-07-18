@@ -50,11 +50,27 @@ public class MatchValidationsService {
         }
     }
 
+
+    public void validateNoNearMatches(Club home, Club away, LocalDateTime matchDateTime, Long matchId){
+        if(!matchRepository.findMatchesNearDateForClubIgnoringMatch(home.getId(), matchDateTime, matchId).isEmpty()
+                || !matchRepository.findMatchesNearDateForClubIgnoringMatch(away.getId(), matchDateTime, matchId).isEmpty()){
+            throw new ConflictException("Clubes possuem partidas próximas!");
+        }
+    }
+
     public void validateStadiumAvailable(Stadium stadium, LocalDateTime matchDateTime){
         if(!matchRepository.findByStadiumAndDay(stadium.getId(), matchDateTime).isEmpty()){
             throw new ConflictException("Estádio já tem partida no mesmo dia.");
         }
     }
+
+    public void validateStadiumAvailable(Stadium stadium, LocalDateTime matchDateTime, Long matchId){
+        if(!matchRepository.findByStadiumAndDayIgnoringMatch(stadium.getId(), matchDateTime, matchId).isEmpty()){
+            throw new ConflictException("Estádio já tem partida no mesmo dia.");
+        }
+    }
+
+
 
     public Club findClubOrThrow(Long clubId){
         return clubRepository.findById(clubId)
