@@ -53,7 +53,7 @@ public class MatchController {
             @RequestParam(required = false) Boolean routs,
             @RequestParam(required = false) String side,
             @ParameterObject
-            @PageableDefault(sort = "matchDateTime", size =  10, page = 0)
+            @PageableDefault(size =  10, page = 0)
             Pageable pageable
     ){
         Page<MatchesResponseDTO> page = matchService.searchMatches(clubId, stadiumId, routs, side, pageable);

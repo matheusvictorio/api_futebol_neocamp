@@ -8,9 +8,11 @@ import com.neocamp.api_futebol.entities.State;
 import com.neocamp.api_futebol.services.ClubService;
 import com.neocamp.api_futebol.services.MatchService;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +57,8 @@ public class ClubController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) State state,
             @RequestParam(required = false) Boolean active,
+            @ParameterObject
+            @PageableDefault(size =  10, page = 0)
             Pageable pageable
     ) {
         Page<ClubsResponseDTO> page = clubService.searchClubs(name, state, active, pageable);

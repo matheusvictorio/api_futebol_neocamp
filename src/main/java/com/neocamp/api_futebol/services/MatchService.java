@@ -142,7 +142,7 @@ public class MatchService {
 
         List<Match> matches;
 
-        if (side != null &&!side.equalsIgnoreCase("casa") && !side.equalsIgnoreCase("fora")) {
+        if (side != null && !side.equalsIgnoreCase("casa") && !side.equalsIgnoreCase("fora")) {
             throw new BadRequestException("Lado inválido!");
         }
 
