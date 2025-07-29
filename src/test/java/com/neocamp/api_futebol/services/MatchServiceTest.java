@@ -131,13 +131,9 @@ class MatchServiceTest {
         match.setStadium(stadium1);
 
         when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
-        when(validations.formatResult(match)).thenReturn("2x1");
-        when(validations.determineWinner(match)).thenReturn("Club 1");
-
         var response = matchService.findById(1L);
-
         assertNotNull(response);
-        assertEquals("2x1", response.result());
+        assertEquals("2 x 1", response.result());
         assertEquals("Club 1", response.winner());
     }
 
@@ -171,10 +167,7 @@ class MatchServiceTest {
         when(validations.findClubOrThrow(2L)).thenReturn(club2);
         when(validations.findStadiumOrThrow(1L)).thenReturn(stadium1);
         when(matchRepository.save(any(Match.class))).thenReturn(match);
-        when(validations.formatResult(any(Match.class))).thenReturn("2x1");
-        when(validations.determineWinner(any(Match.class))).thenReturn("Club 1");
-
-        MatchesResponseDTO response = matchService.createMatch(dto);
+        var response = matchService.createMatch(dto);
 
         verify(validations).validateNotSameClubs(club1, club2);
         verify(validations).validateClubsActive(club1, club2);
@@ -183,7 +176,7 @@ class MatchServiceTest {
         verify(validations).validateStadiumAvailable(stadium1, dto.matchDateTime());
 
         assertNotNull(response);
-        assertEquals("2x1", response.result());
+        assertEquals("2 x 1", response.result());
         assertEquals("Club 1", response.winner());
     }
 
@@ -326,9 +319,6 @@ class MatchServiceTest {
         when(validations.findClubOrThrow(2L)).thenReturn(club2);
         when(validations.findStadiumOrThrow(1L)).thenReturn(stadium1);
         when(matchRepository.save(any(Match.class))).thenReturn(match);
-        when(validations.formatResult(any())).thenReturn("3x1");
-        when(validations.determineWinner(any())).thenReturn("Club 1");
-
         MatchesResponseDTO response = matchService.updateMatch(1L, dto);
 
         verify(validations).validateNotSameClubs(club1, club2);
@@ -338,7 +328,7 @@ class MatchServiceTest {
         verify(validations).validateStadiumAvailable(stadium1, dto.matchDateTime(), 1L);
 
         assertNotNull(response);
-        assertEquals("3x1", response.result());
+        assertEquals("3 x 1", response.result());
         assertEquals("Club 1", response.winner());
     }
 
@@ -538,22 +528,13 @@ class MatchServiceTest {
         when(matchRepository.findWithFilters(null, null, null, null, Pageable.unpaged()))
                 .thenReturn(matchPage);
 
-        when(validations.formatResult(any(Match.class))).thenReturn("2x1");
-        when(validations.determineWinner(any(Match.class))).thenReturn("Club 1");
-
-
         Page<MatchesResponseDTO> result = matchService.searchMatches(null, null, null, null, Pageable.unpaged());
-
-
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
         MatchesResponseDTO dto = result.getContent().get(0);
-        assertEquals("2x1", dto.result());
+        assertEquals("2 x 1", dto.result());
         assertEquals("Club 1", dto.winner());
-
         verify(matchRepository).findWithFilters(null, null, null, null, Pageable.unpaged());
-        verify(validations).formatResult(match);
-        verify(validations).determineWinner(match);
     }
 
     @Test
@@ -609,13 +590,9 @@ class MatchServiceTest {
         Page<Match> matchPage = new PageImpl<>(List.of(match));
         when(matchRepository.findWithFilters(1L, 1L, true, "casa", Pageable.unpaged())).thenReturn(matchPage);
 
-        when(validations.formatResult(any(Match.class))).thenReturn("2x1");
-        when(validations.determineWinner(any(Match.class))).thenReturn("Club 1");
-
         Page<MatchesResponseDTO> result = matchService.searchMatches(1L, 1L, true, "casa", Pageable.unpaged());
-
         assertEquals(1, result.getTotalElements());
-        assertEquals("2x1", result.getContent().get(0).result());
+        assertEquals("2 x 1", result.getContent().get(0).result());
         assertEquals("Club 1", result.getContent().get(0).winner());
     }
 
@@ -822,6 +799,34 @@ class MatchServiceTest {
         return new Match(clubMatch1, clubMatch2, stadium1, LocalDateTime.now().minusDays(10), homeGoals, awayGoals);
     }
 
+    @Test
+    @DisplayName("Should determine winner when home wins")
+    void determineWinner() {
+        Match m = new Match(); m.setHomeGoals(3); m.setAwayGoals(1);
+        m.setHomeClub(club1); m.setAwayClub(club2);
+        assertEquals("Club 1", matchService.determineWinner(m));
+    }
 
+    @Test
+    @DisplayName("Should determine winner when away wins")
+    void determineWinnerCase2() {
+        Match m = new Match(); m.setHomeGoals(1); m.setAwayGoals(2);
+        m.setHomeClub(club1); m.setAwayClub(club2);
+        assertEquals("Club 2", matchService.determineWinner(m));
+    }
 
+    @Test
+    @DisplayName("Should determine winner when draw")
+    void determineWinnerCase3() {
+        Match m = new Match(); m.setHomeGoals(1); m.setAwayGoals(1);
+        m.setHomeClub(club1); m.setAwayClub(club2);
+        assertEquals("Empate", matchService.determineWinner(m));
+    }
+
+    @Test
+    @DisplayName("Should format result")
+    void formatResult() {
+        Match m = new Match(); m.setHomeGoals(3); m.setAwayGoals(1);
+        assertEquals("3 x 1", matchService.formatResult(m));
+    }
 }

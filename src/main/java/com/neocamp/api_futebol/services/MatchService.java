@@ -56,8 +56,8 @@ public class MatchService {
         Match match = new Match(homeClub, awayClub, stadium, matchesRequestDTO.matchDateTime(), matchesRequestDTO.homeGoals(), matchesRequestDTO.awayGoals());
         matchRepository.save(match);
 
-        String result = matchValidationsService.formatResult(match);
-        String winner = matchValidationsService.determineWinner(match);
+        String result = formatResult(match);
+        String winner = determineWinner(match);
 
         return new MatchesResponseDTO(
                 match.getId(),
@@ -90,8 +90,8 @@ public class MatchService {
 
         matchRepository.save(match);
 
-        String result = matchValidationsService.formatResult(match);
-        String winner = matchValidationsService.determineWinner(match);
+        String result = formatResult(match);
+        String winner = determineWinner(match);
 
         return new MatchesResponseDTO(match.getId(),
                 match.getHomeClub().getName(),
@@ -114,8 +114,8 @@ public class MatchService {
         var match = matchRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Partida não encontrada!"));
 
-        String result = matchValidationsService.formatResult(match);
-        String winner = matchValidationsService.determineWinner(match);
+        String result = formatResult(match);
+        String winner = determineWinner(match);
 
         return new MatchesResponseDTO(
                 match.getId(),
@@ -140,8 +140,8 @@ public class MatchService {
         }
         Page<Match> matches = matchRepository.findWithFilters(clubId, stadiumId, routs, side, pageable);
         return matches.map(m -> {
-            String result = matchValidationsService.formatResult(m);
-            String winner = matchValidationsService.determineWinner(m);
+            String result = formatResult(m);
+            String winner = determineWinner(m);
             return new MatchesResponseDTO(m, result, winner);
         });
     }
@@ -326,4 +326,18 @@ public class MatchService {
                 default -> throw new BadRequestException("Filtro inválido!");
             };
         }
+
+    public String determineWinner(Match match) {
+        if(match.getHomeGoals() > match.getAwayGoals()){
+            return match.getHomeClub().getName();
+        } else if(match.getAwayGoals() > match.getHomeGoals()){
+            return match.getAwayClub().getName();
+        } else {
+            return "Empate";
+        }
+    }
+
+    public String formatResult(Match match){
+        return match.getHomeGoals() + " x " +  match.getAwayGoals();
+    }
 }

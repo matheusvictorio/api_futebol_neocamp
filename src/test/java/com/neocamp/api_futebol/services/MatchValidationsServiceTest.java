@@ -135,35 +135,4 @@ class MatchValidationsServiceTest {
 
         assertEquals("Estádio já tem partida no mesmo dia.", ex.getMessage());
     }
-    @Test
-    @DisplayName("Should determine winner when home wins")
-    void determineWinner() {
-        Match m = new Match(); m.setHomeGoals(3); m.setAwayGoals(1);
-        m.setHomeClub(club1); m.setAwayClub(club2);
-        assertEquals("Club 1", validations.determineWinner(m));
-    }
-
-    @Test
-    @DisplayName("Should determine winner when away wins")
-    void determineWinnerCase2() {
-        Match m = new Match(); m.setHomeGoals(1); m.setAwayGoals(2);
-        m.setHomeClub(club1); m.setAwayClub(club2);
-        assertEquals("Club 2", validations.determineWinner(m));
-    }
-
-    @Test
-    @DisplayName("Should determine winner when draw")
-    void determineWinnerCase3() {
-        Match m = new Match(); m.setHomeGoals(1); m.setAwayGoals(1);
-        m.setHomeClub(club1); m.setAwayClub(club2);
-        assertEquals("Empate", validations.determineWinner(m));
-    }
-
-    @Test
-    @DisplayName("Should format result")
-    void formatResult() {
-        Match m = new Match(); m.setHomeGoals(3); m.setAwayGoals(1);
-        assertEquals("3 x 1", validations.formatResult(m));
-    }
-
 }

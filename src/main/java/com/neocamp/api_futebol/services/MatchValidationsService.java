@@ -84,18 +84,4 @@ public class MatchValidationsService {
         return stadiumRepository.findById(stadiumId)
                 .orElseThrow(() -> new BadRequestException("Estádio não encontrado!"));
     }
-
-    public String determineWinner(Match match) {
-        if(match.getHomeGoals() > match.getAwayGoals()){
-            return match.getHomeClub().getName();
-        } else if(match.getAwayGoals() > match.getHomeGoals()){
-            return match.getAwayClub().getName();
-        } else {
-            return "Empate";
-        }
-    }
-
-    public String formatResult(Match match){
-        return match.getHomeGoals() + " x " +  match.getAwayGoals();
-    }
 }
