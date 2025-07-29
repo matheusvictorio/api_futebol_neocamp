@@ -2,7 +2,6 @@ package com.neocamp.api_futebol.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neocamp.api_futebol.dtos.request.ClubsRequestDTO;
-import com.neocamp.api_futebol.dtos.response.MatchesRetrospectDTO;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.entities.Match;
 import com.neocamp.api_futebol.entities.Stadium;
@@ -26,7 +25,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @ActiveProfiles("test")

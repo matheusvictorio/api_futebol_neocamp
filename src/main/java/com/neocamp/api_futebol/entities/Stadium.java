@@ -54,4 +54,8 @@ public class Stadium {
     public void setAddress(Address address) {
         this.address = address;
     }
+
+    public void setId(long l) {
+
+    }
 }

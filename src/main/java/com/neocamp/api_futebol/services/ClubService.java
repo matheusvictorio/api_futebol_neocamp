@@ -11,21 +11,22 @@ import com.neocamp.api_futebol.exception.NotFoundException;
 import com.neocamp.api_futebol.exception.BadRequestException;
 import com.neocamp.api_futebol.repositories.MatchRepository;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
 @Service
 public class ClubService {
-    @Autowired
-    private MatchRepository matchRepository;
-    @Autowired
-    private ClubRepository clubRepository;
+    private final MatchRepository matchRepository;
+
+    private final ClubRepository clubRepository;
+
+    public ClubService(MatchRepository matchRepository, ClubRepository clubRepository) {
+        this.matchRepository = matchRepository;
+        this.clubRepository = clubRepository;
+    }
 
     public ClubsResponseDTO createClub(ClubsRequestDTO dto) {
         //validação se existe no com o mesmo nome no mesmo estado
@@ -70,7 +71,7 @@ public class ClubService {
 
     public ClubsResponseDTO findById(Long id) {
         var club =  clubRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new NotFoundException("Clube não encontrado ou inativo"));;
+                .orElseThrow(() -> new NotFoundException("Clube não encontrado ou inativo"));
         return new ClubsResponseDTO(club.getId(), club.getName(), club.getState(), club.getActive(), club.getCreatedAt());
     }
 

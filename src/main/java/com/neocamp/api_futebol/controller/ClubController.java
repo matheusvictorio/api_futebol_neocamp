@@ -9,7 +9,6 @@ import com.neocamp.api_futebol.services.ClubService;
 import com.neocamp.api_futebol.services.MatchService;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -22,10 +21,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/clubs")
 public class ClubController {
-    @Autowired
-    private ClubService clubService;
-    @Autowired
-    private MatchService matchService;
+    private final ClubService clubService;
+    private final MatchService matchService;
+
+    public ClubController(ClubService clubService, MatchService matchService) {
+        this.clubService = clubService;
+        this.matchService = matchService;
+    }
 
     @PostMapping
     public ResponseEntity<ClubsResponseDTO> createClub(@RequestBody @Valid ClubsRequestDTO clubsRequestDTO) {
@@ -41,7 +43,7 @@ public class ClubController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteClub(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteClub(@PathVariable Long id) {
         clubService.deleteClub(id);
         return ResponseEntity.noContent().build();
     }

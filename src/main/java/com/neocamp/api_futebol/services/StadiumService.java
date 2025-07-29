@@ -9,20 +9,22 @@ import com.neocamp.api_futebol.exception.ConflictException;
 import com.neocamp.api_futebol.exception.NotFoundException;
 import com.neocamp.api_futebol.repositories.StadiumRepository;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class StadiumService {
-    @Autowired
-    private StadiumRepository stadiumRepository;
-    @Autowired
-    private ViaCepService viaCepService;
+    private final  StadiumRepository stadiumRepository;
+
+    private final ViaCepService viaCepService;
+
+    public StadiumService(StadiumRepository stadiumRepository, ViaCepService viaCepService) {
+        this.stadiumRepository = stadiumRepository;
+        this.viaCepService = viaCepService;
+    }
 
 
     public StadiumResponseDTO createStadium(StadiumRequestDTO stadiumRequestDTO) {
@@ -51,7 +53,7 @@ public class StadiumService {
         }
 
         if (stadiumRequestDTO.cep() != null && !stadiumRequestDTO.cep().isBlank() &&
-                (stadium.getAddress() == null || !stadiumRequestDTO.cep().replaceAll("-", "").equals(stadium.getAddress().getCep().replaceAll("-", "")))) {
+                (stadium.getAddress() == null || !stadiumRequestDTO.cep().replace("-", "").equals(stadium.getAddress().getCep().replace("-", "")))) {
             Address newAddress = viaCepService.findByCep(stadiumRequestDTO.cep().replace("-", ""));
             stadium.setAddress(newAddress);
         }
@@ -71,7 +73,7 @@ public class StadiumService {
 
     public StadiumResponseDTO findById(Long id) {
         var stadium =  stadiumRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new NotFoundException("Clube não encontrado ou inativo"));;
+                .orElseThrow(() -> new NotFoundException("Clube não encontrado ou inativo"));
         return new StadiumResponseDTO(stadium.getId(), stadium.getName(), stadium.getAddress(), stadium.getActive());
     }
 
@@ -84,6 +86,6 @@ public class StadiumService {
 
         List<Stadium> stadiums = stadiumRepository.findByAddressCep(cep);
 
-        return stadiums.stream().map(StadiumResponseDTO::new).collect(Collectors.toList());
+        return stadiums.stream().map(StadiumResponseDTO::new).toList();
     }
 }

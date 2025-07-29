@@ -36,7 +36,7 @@ class StadiumControllerTest {
     @Test
     @DisplayName("should create a stadium")
     void createStadium() throws Exception {
-        StadiumRequestDTO dto = new StadiumRequestDTO("Estádio");
+        StadiumRequestDTO dto = new StadiumRequestDTO("Estádio", "12345-678");
         mockMvc.perform(post("/stadiums")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
@@ -48,7 +48,7 @@ class StadiumControllerTest {
     @Test
     @DisplayName("should return 400 when try to create a stadium with empty name")
     void createStadiumCase2() throws Exception {
-        StadiumRequestDTO dto = new StadiumRequestDTO("");
+        StadiumRequestDTO dto = new StadiumRequestDTO("", "12345-678");
         mockMvc.perform(post("/stadiums")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
@@ -57,7 +57,7 @@ class StadiumControllerTest {
     @Test
     @DisplayName("should return 400 when try to create a stadium with one character name")
     void createStadiumCase3() throws Exception {
-        StadiumRequestDTO dto = new StadiumRequestDTO("a");
+        StadiumRequestDTO dto = new StadiumRequestDTO("a", "12345-678");
         mockMvc.perform(post("/stadiums")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
@@ -69,7 +69,7 @@ class StadiumControllerTest {
     void createStadiumCase4() throws Exception {
 
         Stadium stadium = stadiumRepository.save(new Stadium("Estádio"));
-        StadiumRequestDTO dto = new StadiumRequestDTO("Estádio");
+        StadiumRequestDTO dto = new StadiumRequestDTO("Estádio", "12345-678");
 
         mockMvc.perform(post("/stadiums")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,7 +81,7 @@ class StadiumControllerTest {
     @DisplayName("should update a stadium")
     void updateStadium() throws Exception {
         Stadium stadium = stadiumRepository.save(new Stadium("Estádio"));
-        StadiumRequestDTO dto = new StadiumRequestDTO("Estádio Atualizado");
+        StadiumRequestDTO dto = new StadiumRequestDTO("Estádio Atualizado", "12345-678");
         mockMvc.perform(put("/stadiums/{id}", stadium.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
@@ -94,7 +94,7 @@ class StadiumControllerTest {
     @Test
     @DisplayName("should return 404 when try to update a stadium that does not exist")
     void updateStadiumCase2() throws Exception {
-        StadiumRequestDTO dto = new StadiumRequestDTO("Estádio Atualizado");
+        StadiumRequestDTO dto = new StadiumRequestDTO("Estádio Atualizado", "12345-678");
         mockMvc.perform(put("/stadiums/99999")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
@@ -106,7 +106,7 @@ class StadiumControllerTest {
     void updateStadiumCase3() throws Exception {
         Stadium stadium = stadiumRepository.save(new Stadium("Estádio Atualizado"));
         Stadium stadium2 = stadiumRepository.save(new Stadium("Estádio"));
-        StadiumRequestDTO dto = new StadiumRequestDTO("Estádio Atualizado");
+        StadiumRequestDTO dto = new StadiumRequestDTO("Estádio Atualizado", "12345-678");
         mockMvc.perform(put("/stadiums/{id}", stadium2.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))

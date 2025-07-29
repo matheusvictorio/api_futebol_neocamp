@@ -20,9 +20,4 @@ public record ClubsRequestDTO(
         @JsonFormat(pattern = "dd-MM-yyyy" )
         LocalDate createdAt
 ) {
-    public ClubsRequestDTO(String name, State state, LocalDate createdAt) {
-        this.name = name;
-        this.state = state;
-        this.createdAt = createdAt;
-    }
 }

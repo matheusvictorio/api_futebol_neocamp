@@ -6,7 +6,6 @@ import com.neocamp.api_futebol.dtos.response.StadiumResponseDTO;
 import com.neocamp.api_futebol.services.StadiumService;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,8 +18,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/stadiums")
 public class StadiumController {
-    @Autowired
-    private StadiumService stadiumService;
+    private final StadiumService stadiumService;
+
+    public StadiumController(StadiumService stadiumService) {
+        this.stadiumService = stadiumService;
+    }
 
     @PostMapping
     public ResponseEntity<StadiumResponseDTO> createStadium(@RequestBody @Valid StadiumRequestDTO stadiumRequestDTO){
@@ -35,7 +37,7 @@ public class StadiumController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteStadium(@PathVariable Long id){
+    public ResponseEntity<Void> deleteStadium(@PathVariable Long id){
         stadiumService.deleteStadium(id);
         return ResponseEntity.noContent().build();
     }

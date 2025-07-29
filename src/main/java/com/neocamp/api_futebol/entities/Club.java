@@ -65,4 +65,8 @@ public class Club {
     public void delete(){
         this.active = false;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

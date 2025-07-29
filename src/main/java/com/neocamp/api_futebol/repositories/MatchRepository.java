@@ -3,15 +3,11 @@ package com.neocamp.api_futebol.repositories;
 import com.neocamp.api_futebol.dtos.response.ClubRankingDTO;
 import com.neocamp.api_futebol.dtos.response.OppRetrospectDTO;
 import com.neocamp.api_futebol.entities.Match;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 

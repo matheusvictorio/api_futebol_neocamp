@@ -94,4 +94,7 @@ public class Match {
         this.homeGoals = homeGoals;
         this.awayGoals = awayGoals;
     }
+
+    public void setId(long l) {
+    }
 }

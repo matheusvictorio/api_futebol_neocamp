@@ -1,14 +1,10 @@
 package com.neocamp.api_futebol.controller;
 
 import com.neocamp.api_futebol.dtos.request.MatchesRequestDTO;
-import com.neocamp.api_futebol.dtos.response.ClubsResponseDTO;
 import com.neocamp.api_futebol.dtos.response.MatchesResponseDTO;
-import com.neocamp.api_futebol.repositories.MatchRepository;
-import com.neocamp.api_futebol.services.ClubService;
 import com.neocamp.api_futebol.services.MatchService;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,8 +15,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/matches")
 public class MatchController {
-    @Autowired
-    private MatchService matchService;
+    private final MatchService matchService;
+
+    public MatchController(MatchService matchService) {
+        this.matchService = matchService;
+    }
 
     @PostMapping
     public ResponseEntity<MatchesResponseDTO> createMatch(@RequestBody @Valid MatchesRequestDTO matchesRequestDTO) {
@@ -35,7 +34,7 @@ public class MatchController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteMatch(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteMatch(@PathVariable Long id) {
         matchService.deleteMatch(id);
         return ResponseEntity.noContent().build();
     }

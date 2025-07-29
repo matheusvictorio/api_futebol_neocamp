@@ -5,25 +5,28 @@ import com.neocamp.api_futebol.entities.Match;
 import com.neocamp.api_futebol.entities.Stadium;
 import com.neocamp.api_futebol.exception.BadRequestException;
 import com.neocamp.api_futebol.exception.ConflictException;
-import com.neocamp.api_futebol.exception.NotFoundException;
 import com.neocamp.api_futebol.repositories.ClubRepository;
 import com.neocamp.api_futebol.repositories.MatchRepository;
 import com.neocamp.api_futebol.repositories.StadiumRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
 @Service
 public class MatchValidationsService {
-    @Autowired
-    private MatchRepository matchRepository;
-    @Autowired
-    private ClubRepository clubRepository;
-    @Autowired
-    private StadiumRepository stadiumRepository;
+
+    private final MatchRepository matchRepository;
+
+    private final ClubRepository clubRepository;
+
+    private final StadiumRepository stadiumRepository;
+
+    public MatchValidationsService(MatchRepository matchRepository, ClubRepository clubRepository,
+                                   StadiumRepository stadiumRepository) {
+        this.matchRepository = matchRepository;
+        this.clubRepository = clubRepository;
+        this.stadiumRepository = stadiumRepository;
+    }
 
     public void validateNotSameClubs(Club home, Club away){
         if(home.getId().equals(away.getId())){
@@ -31,7 +34,7 @@ public class MatchValidationsService {
         }
     }
     public void validateClubsActive(Club home, Club away){
-        if(!home.getActive() || !away.getActive()){
+        if (!Boolean.TRUE.equals(home.getActive()) || !Boolean.TRUE.equals(away.getActive())) {
             throw new ConflictException("Clube inativo!");
         }
     }

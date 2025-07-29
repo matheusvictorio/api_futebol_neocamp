@@ -1,6 +1,4 @@
 package com.neocamp.api_futebol.repositories;
-
-import com.neocamp.api_futebol.dtos.response.StadiumResponseDTO;
 import com.neocamp.api_futebol.entities.Stadium;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

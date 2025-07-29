@@ -1,7 +1,10 @@
 package com.neocamp.api_futebol.services;
 
 import com.neocamp.api_futebol.dtos.request.MatchesRequestDTO;
-import com.neocamp.api_futebol.dtos.response.*;
+import com.neocamp.api_futebol.dtos.response.ClubRankingDTO;
+import com.neocamp.api_futebol.dtos.response.MatchesResponseDTO;
+import com.neocamp.api_futebol.dtos.response.MatchesRetrospectDTO;
+import com.neocamp.api_futebol.dtos.response.OppRetrospectDTO;
 import com.neocamp.api_futebol.entities.Club;
 import com.neocamp.api_futebol.entities.Match;
 import com.neocamp.api_futebol.entities.Stadium;
@@ -11,26 +14,33 @@ import com.neocamp.api_futebol.repositories.ClubRepository;
 import com.neocamp.api_futebol.repositories.MatchRepository;
 import com.neocamp.api_futebol.repositories.StadiumRepository;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MatchService {
-    @Autowired
-    private MatchRepository matchRepository;
-    @Autowired
-    private MatchValidationsService matchValidationsService;
-    @Autowired
-    private ClubRepository clubRepository;
-    @Autowired
-    private StadiumRepository stadiumRepository;
+    private static final String clubNotFoundMessage = "Clube não encontrado!";
+
+    private final MatchRepository matchRepository;
+
+    private final MatchValidationsService matchValidationsService;
+
+    private final ClubRepository clubRepository;
+
+    private final StadiumRepository stadiumRepository;
+
+    public MatchService(MatchRepository matchRepository, MatchValidationsService matchValidationsService,
+                        ClubRepository clubRepository, StadiumRepository stadiumRepository) {
+        this.matchRepository = matchRepository;
+        this.matchValidationsService = matchValidationsService;
+        this.clubRepository = clubRepository;
+        this.stadiumRepository = stadiumRepository;
+    }
 
     public MatchesResponseDTO createMatch(@Valid MatchesRequestDTO matchesRequestDTO) {
         Club homeClub = matchValidationsService.findClubOrThrow(matchesRequestDTO.homeClubId());
@@ -120,7 +130,7 @@ public class MatchService {
 
     public Page<MatchesResponseDTO> searchMatches(Long clubId, Long stadiumId, Boolean routs, String side, Pageable pageable) {
         if (clubId != null && !clubRepository.existsById(clubId)) {
-            throw new NotFoundException("Clube não encontrado!");
+            throw new NotFoundException(clubNotFoundMessage);
         }
         if (stadiumId != null && !stadiumRepository.existsById(stadiumId)) {
             throw new NotFoundException("Estádio não encontrado!");
@@ -138,7 +148,7 @@ public class MatchService {
 
     public MatchesRetrospectDTO getClubRetrospective(Long id, String side) {
         clubRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
+                .orElseThrow(() -> new NotFoundException(clubNotFoundMessage));
 
         List<Match> matches;
 
@@ -154,9 +164,18 @@ public class MatchService {
             matches = matchRepository.findAllMatchesForClub(id);
         }
 
-        String clubName = clubRepository.findById(id).get().getName();
+        Optional<Club> value = clubRepository.findById(id);
+        if (!value.isPresent()) {
+            throw new NotFoundException(clubNotFoundMessage);
+        }
+        String clubName = value.get().getName();
 
-        int matchesQuantity = 0, victories = 0, draws = 0, defeats = 0, goalsFor = 0, goalsAgainst = 0;
+        int matchesQuantity = 0;
+        int victories = 0;
+        int draws = 0;
+        int defeats = 0;
+        int goalsFor = 0;
+        int goalsAgainst = 0;
 
         for (Match match : matches) {
             boolean isHome = match.getHomeClub().getId().equals(id);
@@ -181,30 +200,39 @@ public class MatchService {
 
     public List<OppRetrospectDTO> getOppRetrospects(Long id, String side) {
         clubRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
+                .orElseThrow(() -> new NotFoundException(clubNotFoundMessage));
 
         if (side != null &&!side.equalsIgnoreCase("casa") && !side.equalsIgnoreCase("fora")) {
             throw new BadRequestException("Lado inválido!");
         }
-        List<OppRetrospectDTO> stats = matchRepository.findOppsStats(id, side);
-        return stats;
+
+        return matchRepository.findOppsStats(id, side);
     }
 
     public OppRetrospectDTO getOneOppRestrospect(Long id, Long oppId, String side) {
         clubRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Clube não encontrado!"));
+                .orElseThrow(() -> new NotFoundException(clubNotFoundMessage));
 
         clubRepository.findById(oppId)
                 .orElseThrow(() -> new NotFoundException("Adversário não encontrado!"));
 
 
-        String oppName = clubRepository.findById(oppId).get().getName();
+        Optional<Club> value = clubRepository.findById(oppId);
+        if (value.isEmpty()) {
+            throw new NotFoundException("Adversário não encontrado!");
+        }
+        String oppName = value.get().getName();
         if (side != null &&!side.equalsIgnoreCase("casa") && !side.equalsIgnoreCase("fora")) {
             throw new BadRequestException("Lado inválido!");
         }
         List<Match> matches = matchRepository.findAllMatchesBetweenClubs(id, oppId, side);
 
-        Long matchesQuantity = 0L, victories = 0L, draws = 0L, defeats = 0L,  goalsFor = 0L, goalsAgainst = 0L;
+        Long matchesQuantity = 0L;
+        Long victories = 0L;
+        Long draws = 0L;
+        Long defeats = 0L;
+        Long goalsFor = 0L;
+        Long goalsAgainst = 0L;
 
         for (Match match : matches) {
             boolean isHome = match.getHomeClub().getId().equals(id);
@@ -250,4 +278,52 @@ public class MatchService {
             default -> throw new BadRequestException("Filtro inválido!");
         };
     }
+
+        public List<ClubRankingDTO> rankClubsByFilterStream(String filter) {
+            List<Club> clubs = clubRepository.findAll();
+            List<Match> matches = matchRepository.findAll();
+
+            List<ClubRankingDTO> ranking = clubs.stream()
+                    .map(club -> {
+                long victories = matches.stream()
+                        .filter(m -> (m.getHomeClub().getId().equals(club.getId()) && m.getHomeGoals() > m.getAwayGoals()) ||
+                                     (m.getAwayClub().getId().equals(club.getId()) && m.getAwayGoals() > m.getHomeGoals()))
+                        .count();
+                long draws = matches.stream()
+                        .filter(m -> (m.getHomeClub().getId().equals(club.getId()) || m.getAwayClub().getId().equals(club.getId())) &&
+                                     m.getHomeGoals().equals(m.getAwayGoals()))
+                        .count();
+                long points = victories * 3 + draws;
+                long goals = matches.stream()
+                        .mapToLong(m -> {
+                            if (m.getHomeClub().getId().equals(club.getId())) return m.getHomeGoals();
+                            if (m.getAwayClub().getId().equals(club.getId())) return m.getAwayGoals();
+                            return 0;
+                        }).sum();
+                long totalMatches = matches.stream()
+                        .filter(m -> m.getHomeClub().getId().equals(club.getId()) || m.getAwayClub().getId().equals(club.getId()))
+                        .count();
+                return new ClubRankingDTO(club.getId(), club.getName(), points, goals, victories, totalMatches);
+            }).toList();
+
+            return switch (filter) {
+                case "pontos" -> ranking.stream()
+                        .filter(r -> r.points() != null && r.points() > 0)
+                        .sorted(Comparator.comparing(ClubRankingDTO::points).reversed())
+                        .toList();
+                case "gols" -> ranking.stream()
+                        .filter(r -> r.goals() != null && r.goals() > 0)
+                        .sorted(Comparator.comparing(ClubRankingDTO::goals).reversed())
+                        .toList();
+                case "vitorias" -> ranking.stream()
+                        .filter(r -> r.victories() != null && r.victories() > 0)
+                        .sorted(Comparator.comparing(ClubRankingDTO::victories).reversed())
+                        .toList();
+                case "partidas" -> ranking.stream()
+                        .filter(r -> r.matches() != null && r.matches() > 0)
+                        .sorted(Comparator.comparing(ClubRankingDTO::matches).reversed())
+                        .toList();
+                default -> throw new BadRequestException("Filtro inválido!");
+            };
+        }
 }
